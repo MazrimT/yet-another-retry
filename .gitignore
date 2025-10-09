@@ -6,10 +6,10 @@ dist/
 wheels/
 *.egg-info
 .pytest_cache
-.vscode
+.vscode*
 
 # Virtual environments
-.venv
+.venv*
 venv
 
 # local config
