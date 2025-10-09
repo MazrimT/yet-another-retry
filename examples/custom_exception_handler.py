@@ -36,4 +36,7 @@ def custom_exception_handler(
 
 @retry(exception_handler=custom_exception_handler)
 def my_function():
-    pass
+    raise Exception("This is an Exception")
+
+
+my_function()

@@ -7,3 +7,6 @@ def my_function():
 
     print("Raising an error")
     raise Exception("Raising an error")
+
+
+my_function()
