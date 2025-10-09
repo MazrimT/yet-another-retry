@@ -37,8 +37,8 @@ def retry(
         retry_exceptions(tuple[Exception]): An Exception or tuple of exceptions to retry. All other exceptions will fail. Defaults to (Exception) meaning all exceptions are retried unless this value is modified.
         fail_on_exceptions(tuple[Exception]): An Exception or tuple of exception to not retry but instead raise error if it occures. Defaults to ()
         tries(int): Maximum number of retries to attempt. Defaults to 3
-        retry_callable(Callable): Callable function to run in case of retries. Defaults to base retry_delay_seconds function
-        error_callable(Callable): Callable function to run in case of erroring out, either by reaching max retries +1 or hitting a fail_on_exception exception. Defaults to base raise_exception function.
+        retry_callable(Callable): Callable function to run in case of retries. Defaults to default retry_handler function
+        error_callable(Callable): Callable function to run in case of erroring out, either by reaching max retries +1 or hitting a fail_on_exception exception. Defaults to default exception_handler function.
         extra_kwargs(dict): A dict of extra parameters to pass to the handlers.
                             If supplied will be passed to the handler as normal parameters as well as in the retry_config as "extra_kwargs".
         raise_error(bool): If set to false the decorator itself will not raise the error but expect the handler to do it. Default is True

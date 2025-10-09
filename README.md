@@ -1,10 +1,10 @@
 # yet-another-retry
 This package is inspired by other retry-packages.  
 It takes a slightly different approach to certain things however to allow the decorated function to know it is being retried and take action based on a retry_config.    
-The package uses only python library and has no external dependencies.  
-
-As such it does not to any logging or take in a logger class but instead allows the function, if made for it, to know which retry nr it is on.  
-It also allows for custom handlers to be created for retry and exception handling. These can log or do anything user wants them to do and will also recieve the retry_config.
+The package uses only python standard library and has no external dependencies.  
+  
+It allows for custom handlers to be created for retry and exception handling.  
+Handlers can log or do anything user wants them to do and will also recieve the retry_config.
 
 # Install
 ```bash
