@@ -40,4 +40,7 @@ def custom_retry_handler(
 
 @retry(retry_callable=custom_retry_handler, extra_kwargs={"sleep_modifier": 5})
 def my_function():
-    pass
+    raise Exception("This is an exception")
+
+
+my_function()

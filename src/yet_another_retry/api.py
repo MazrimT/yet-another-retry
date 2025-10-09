@@ -12,6 +12,7 @@ def retry(
     retry_callable: Callable = default_retry,
     error_callable: Callable = default_exception,
     extra_kwargs: dict = {},
+    raise_error: bool = True,
 ) -> Callable:
     """Decorator for retrying a function
 
@@ -26,6 +27,7 @@ def retry(
             "retry_callable": retry_callable,
             "error_callable": error_callable,
             "extra_kwargs": extra_kwargs,
+            "raise_error": raise_error,
             "attempt": 1    # which attempt number currently running
         }
 
@@ -39,6 +41,7 @@ def retry(
         error_callable(Callable): Callable function to run in case of erroring out, either by reaching max retries +1 or hitting a fail_on_exception exception. Defaults to base raise_exception function.
         extra_kwargs(dict): A dict of extra parameters to pass to the handlers.
                             If supplied will be passed to the handler as normal parameters as well as in the retry_config as "extra_kwargs".
+        raise_error(bool): If set to false the decorator itself will not raise the error but expect the handler to do it. Default is True
     """
 
     def decorator(func: Callable) -> Callable:
@@ -50,6 +53,7 @@ def retry(
                 "retry_callable": retry_callable,
                 "error_callable": error_callable,
                 "extra_kwargs": extra_kwargs,
+                "raise_error": raise_error,
                 "attempt": 0,
             }
             # parameters from the decorated function
@@ -68,15 +72,15 @@ def retry(
                 except fail_on_exceptions as e:
                     if error_callable:
                         error_callable(e, retry_config=retry_config, **extra_kwargs)
-                    # if the error callable did not raise the error we raise it here
-                    raise e
+                    if raise_error:
+                        raise e
 
                 except retry_exceptions as e:
                     if i == tries:
                         if error_callable:
                             error_callable(e, retry_config=retry_config, **extra_kwargs)
-                        # if the error callable did not raise the error we raise it here
-                        raise e
+                        if raise_error:
+                            raise e
                     delay_seconds = retry_callable(
                         e, retry_config=retry_config, **extra_kwargs
                     )
