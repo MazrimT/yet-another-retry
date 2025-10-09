@@ -24,18 +24,15 @@ jobs:
       - name: Set version
         run: |
           sed -i "s/^version = \".*\"/version = \"${GITHUB_REF_NAME#v}\"/" pyproject.toml
-          cat pyproject.toml
+
       - name: Build
         run: |
           rm -rf dist
           uv build --sdist --wheel --out-dir dist
           ls dist/
 
-
-
-
-      #- name: publish
-      #  env:
-      #    UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      #  run: |
-      #    uv publish
+      - name: publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          uv publish
