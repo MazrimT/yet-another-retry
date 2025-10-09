@@ -4,5 +4,5 @@ requires-python = ">=3.9"
 
 [[package]]
 name = "yet-another-retry"
-version = "0.0.1"
+version = "0.1.1"
 source = { editable = "." }

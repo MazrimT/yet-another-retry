@@ -73,3 +73,9 @@ See examples in the examples folder
 
 
 # install
+```python
+python -m pip install yet-another-retry
+```
+then import with:
+```python
+from yet-another-retry import retry

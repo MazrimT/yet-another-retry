@@ -15,3 +15,6 @@ venv
 # local config
 .env
 .envrc
+
+# local test things
+local_test.py

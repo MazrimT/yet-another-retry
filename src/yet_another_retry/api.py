@@ -1,8 +1,8 @@
 from typing import Callable
 import time
 import inspect
-from retry_handlers import default_retry
-from exception_handlers import default_exception
+from yet_another_retry.retry_handlers import default_retry
+from yet_another_retry.exception_handlers import default_exception
 
 
 def retry(
@@ -74,7 +74,7 @@ def retry(
                 except retry_exceptions as e:
                     if i == tries:
                         if error_callable:
-                            error_callable()
+                            error_callable(e, retry_config=retry_config, **extra_kwargs)
                         # if the error callable did not raise the error we raise it here
                         raise e
                     delay_seconds = retry_callable(
