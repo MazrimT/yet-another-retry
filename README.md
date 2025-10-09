@@ -6,6 +6,15 @@ and take action based on a retry_config.
 As such it does not to any logging or take in a logger class but instead allows the function, if made for it, to know which retry nr it is on.
 It also allows for custom handlers to be created for retry and exception handling. These can log or do anything user wants them to do and will also recieve the retry_config.
 
+# install
+```python
+python -m pip install yet-another-retry
+```
+then import with:
+```python
+from yet-another-retry import retry
+```
+
 # Usage
 ### Basic usage
 This is not much different from other retry packages.  
@@ -69,13 +78,3 @@ The default raise_exception handler just raises the exception.
 If no exception is raised by a custom exception_handler the decorator will raise the error after the function.
 
 See examples in the examples folder
-
-
-
-# install
-```python
-python -m pip install yet-another-retry
-```
-then import with:
-```python
-from yet-another-retry import retry
