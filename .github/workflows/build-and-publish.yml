@@ -23,10 +23,7 @@ jobs:
 
       - name: Set version
         run: |
-          RAW_TAG = "${{ github.ref_name }}"
-          VERSION = "${RAW_TAG//v}"
-          sed -i 's/^version = .*/version = "$VERSION"/' pyproject.toml
-          echo "version set to $VERSION in pyproject.toml"
+          sed -i "s/^version = \".*\"/version = \"${GITHUB_REF_NAME#v}\"/" pyproject.toml
           cat pyproject.toml
       - name: Build
         run: |
