@@ -1,7 +1,7 @@
 def default_retry(
     e: Exception, retry_config: dict = {}, retry_delay_seconds: int = 0, *args, **kwargs
-):
-    """Package base retry strategy
+) -> int:
+    """Package default retry handler
 
     Will return return nr of seconds to sleep
 
