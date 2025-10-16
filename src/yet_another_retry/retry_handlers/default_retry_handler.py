@@ -1,4 +1,4 @@
-def default_retry(
+def default_retry_handler(
     e: Exception, retry_config: dict = {}, retry_delay_seconds: int = 0, *args, **kwargs
 ) -> int:
     """Package default retry handler

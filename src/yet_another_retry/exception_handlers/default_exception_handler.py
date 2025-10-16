@@ -1,4 +1,4 @@
-def default_exception(e: Exception, retry_config: dict, *args, **kwargs):
+def default_exception_handler(e: Exception, retry_config: dict, *args, **kwargs):
     """Base function for handling exception
     Args:
         e(Exception): the exception to raise
