@@ -38,7 +38,7 @@ def custom_retry_handler(
     return delay
 
 
-@retry(retry_callable=custom_retry_handler, extra_kwargs={"sleep_modifier": 5})
+@retry(retry_handler=custom_retry_handler, extra_kwargs={"sleep_modifier": 5})
 def my_function():
     raise Exception("This is an exception")
 
