@@ -15,6 +15,5 @@ venv
 # local config
 .env
 .envrc
-
-# local test things
-local_test.py
+uv.lock
+.python-version
