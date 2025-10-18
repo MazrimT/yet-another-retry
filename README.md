@@ -1,3 +1,5 @@
+[![Build and Publish](https://github.com/MazrimT/yet-another-retry/actions/workflows/build-and-publish.yml/badge.svg)](https://github.com/MazrimT/yet-another-retry/actions/workflows/build-and-publish.yml) 
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/yet-another-retry?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/yet-another-retry)
 # yet-another-retry
 This package is inspired by other retry-packages.  
 It takes a slightly different approach to certain things however to allow the decorated function to know it is being retried and take action based on a retry_config.    
