@@ -37,3 +37,10 @@ jobs:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           uv publish
+
+      - name: Add files to release
+        run: |
+          gh release upload "${GITHUB_REF_NAME}" dist/*.whl --repo "${{ github.repository }}" --clobber
+          gh release upload "${GITHUB_REF_NAME}" dist/*.tar.gz --repo "${{ github.repository }}" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
