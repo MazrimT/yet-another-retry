@@ -9,11 +9,12 @@ def test_retry():
         assert False
 
 
-@retry(tries=5)
+@retry()
 def function_to_retry(retry_config: dict):
 
     attempt = retry_config["attempt"]
-    if attempt == 5:
+    tries = retry_config["tries"]
+    if attempt == tries:
         return True
 
     raise Exception("This is an exception")
