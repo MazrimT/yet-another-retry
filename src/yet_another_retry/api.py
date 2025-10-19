@@ -23,12 +23,13 @@ def retry(
             "retry_exceptions": retry_exceptions,
             "fail_on_exceptions": fail_on_exception,
             "tries": tries,
-            "op_kwargs": op_kwargs,
             "retry_handler": retry_handler,
             "exception_handler": exception_handler,
             "extra_kwargs": extra_kwargs,
             "raise_error": raise_error,
-            "attempt": 1    # which attempt number currently running
+            # Below values are for use in the decorated function or handlers as they see fit for logic or logging.
+            "attempt": 1            # which attempt number currently running
+            "previous_delay": 1     # how many seconds the last sleep was
         }
 
     ```
@@ -55,6 +56,7 @@ def retry(
                 "extra_kwargs": extra_kwargs,
                 "raise_error": raise_error,
                 "attempt": 0,
+                "previous_delay": 0,
             }
             # parameters from the decorated function
             # used to check if the decorated function has a "retry_config" parameter
@@ -86,6 +88,7 @@ def retry(
                     delay_seconds = retry_handler(
                         e, retry_config=retry_config, **extra_kwargs
                     )
+                    retry_config["previous_delay"] = delay_seconds
 
                     # the return from the retry handler must be an int or a float
                     if not isinstance(delay_seconds, (int, float)):
