@@ -39,8 +39,12 @@ jobs:
           uv publish
 
       - name: Add files to release
-        run: |
-          gh release upload "${GITHUB_REF_NAME}" dist/*.whl --repo "${{ github.repository }}" --clobber
-          gh release upload "${GITHUB_REF_NAME}" dist/*.tar.gz --repo "${{ github.repository }}" --clobber
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+          fail_on_unmatched_files: false
+          overwrite_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
