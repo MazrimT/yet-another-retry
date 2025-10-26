@@ -1,15 +1,16 @@
 def sleep_attempt_seconds(
-    e: Exception, retry_config: dict = {}, *args, **kwargs
+    e: Exception, attempt: int, base_seconds_delay: int = 0, **kwargs
 ) -> int:
     """Retry handler that returns the attempt number as delay
 
-    Will return return nr of seconds to sleep
+    Will return return nr of seconds to sleep as attempt + base_seconds_delay
 
     Args:
         e(Exception): the exception that occured
-        retry_config(dict): the retry config from the decorator
+        attempt(int): Attempt number, is supplied by the decorator.
+        base_seconds_delay(int|float): Number of seconds to sleep on top of the attempt. Defaults to 0
     """
 
-    retry_delay_seconds = retry_config["attempt"]
+    sleep_time = attempt + base_seconds_delay
 
-    return retry_delay_seconds
+    return sleep_time

@@ -3,7 +3,9 @@ from yet_another_retry import retry
 
 @retry()
 def my_function(retry_config: dict):
-    print(f"This is attempt number: {retry_config['attempt']}")
+
+    attempt = retry_config["attempt"]
+    print(f"This is attempt number: {attempt}")
     raise Exception("This is an exception")
 
 
