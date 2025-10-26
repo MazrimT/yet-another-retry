@@ -113,7 +113,7 @@ def my_function():
 # A word about input parameters
 
 * All parameters on the `decorated function` will be supplied to the function when it is run.
-* All parameters on the `decorator` will be passed to the function if it has retry_config input parameter.
+* All parameters on the `decorator` will be passed to the function as a parameter called retry_config, if it specifically has retry_config input parameter.
 * Make sure to never have the same names of parameters on the `decorated function` and the `decorator`,  
   or use any of the `decorators` expected inputs as input parameters on the `decorated function`
 * If same input parameters exist on both the `decorator` and the `decorated function` then the `decorated functions` inputs has priority and might lead to unexpected results.
