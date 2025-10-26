@@ -6,9 +6,7 @@ def test_sleep_attempt_seconds():
 
     try:
         random_attempt = random.randint(1, 10)
-        sleep_seconds = sleep_attempt_seconds(
-            e=Exception, retry_config={"attempt": random_attempt}
-        )
+        sleep_seconds = sleep_attempt_seconds(e=Exception, attempt=random_attempt)
 
         assert sleep_seconds == random_attempt
     except:

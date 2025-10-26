@@ -3,12 +3,11 @@ import random
 
 def exponential_backoff(
     e: Exception,
-    retry_config: dict = {},
-    base_delay: float | int = 1,
+    attempt: int,
+    base_seconds_delay: float | int = 1,
     exponential_factor: float | int = 2,
     max_delay_seconds: float | int = None,
     jitter_range: float | int = None,
-    *args,
     **kwargs,
 ) -> int:
     """Retry handler increases the sleep time exponentially.
@@ -23,7 +22,7 @@ def exponential_backoff(
 
     Args:
         e(Exception): The exception that occured. Defaults to Exception.
-        retry_config(dict): The retry config from the decorator.
+        attempt(int): Attempt number, is passed from the decorator on each retry.
         base_delay_seconds(float | int): Base of the sleep calculation. Defaults to 1.
         exponential_factor(float | int): Multiplyer for the sleep calculation. Defaults to 2
         max_delay_seconds(float | int, optional): The max seconds to sleep between tries. If None no upper limit. Defaults to None.
@@ -34,9 +33,7 @@ def exponential_backoff(
 
     """
 
-    attempt = retry_config["attempt"]
-
-    sleep_delay = base_delay * (exponential_factor**attempt)
+    sleep_delay = base_seconds_delay * (exponential_factor**attempt)
 
     if max_delay_seconds and sleep_delay > max_delay_seconds:
         sleep_delay = max_delay_seconds
