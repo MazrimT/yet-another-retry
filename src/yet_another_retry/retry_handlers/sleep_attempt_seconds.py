@@ -1,5 +1,5 @@
 def sleep_attempt_seconds(
-    e: Exception, attempt: int, base_seconds_delay: int = 0, **kwargs
+    e: Exception, attempt: int, base_seconds_delay: int = 0, *args, **kwargs
 ) -> int:
     """Retry handler that returns the attempt number as delay
 

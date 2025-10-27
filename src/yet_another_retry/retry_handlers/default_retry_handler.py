@@ -1,4 +1,6 @@
-def default_retry_handler(e: Exception, base_seconds_delay: int = 0, **kwargs) -> int:
+def default_retry_handler(
+    e: Exception, base_seconds_delay: int = 0, *args, **kwargs
+) -> int:
     """Package default retry handler
 
     Will return return nr of seconds to sleep

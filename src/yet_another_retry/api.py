@@ -14,6 +14,7 @@ def retry(
     retry_handler: Callable = default_retry_handler,
     exception_handler: Callable = default_exception_handler,
     raise_final_exception: bool = True,
+    *args,
     **kwargs,
 ) -> Callable:
     """Decorator for retrying a function
@@ -46,7 +47,7 @@ def retry(
                 "raise_final_exception": raise_final_exception,
                 "attempt": 0,
                 "previous_delay": 0,
-                **func_kwargs,
+                **kwargs,
             }
 
             if add_retry_config:
@@ -73,17 +74,17 @@ def retry(
                 except fail_on_exceptions as e:
 
                     if exception_handler:
-                        exception_handler(e, **kwargs)
+                        exception_handler(e, *args, **kwargs)
                     if raise_final_exception:
                         raise e
 
                 except retry_exceptions as e:
                     if i == tries:
                         if exception_handler:
-                            exception_handler(e, **kwargs)
+                            exception_handler(e, *args, **kwargs)
                         if raise_final_exception:
                             raise e
-                    delay_seconds = retry_handler(e, **kwargs)
+                    delay_seconds = retry_handler(e, *args, **kwargs)
 
                     if add_retry_config:
                         retry_config["previous_delay"] = delay_seconds

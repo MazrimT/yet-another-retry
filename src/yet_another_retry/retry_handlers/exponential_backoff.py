@@ -8,6 +8,7 @@ def exponential_backoff(
     exponential_factor: float | int = 2,
     max_delay_seconds: float | int = None,
     jitter_range: float | int = None,
+    *args,
     **kwargs,
 ) -> int:
     """Retry handler increases the sleep time exponentially.
