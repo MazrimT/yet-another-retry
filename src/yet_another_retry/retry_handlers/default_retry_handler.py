@@ -1,4 +1,6 @@
-def default_retry_handler(e: Exception, base_seconds_delay: int = 0, **kwargs) -> int:
+def default_retry_handler(
+    e: Exception, base_seconds_delay: int = 0, *args, **kwargs
+) -> int:
     """Package default retry handler
 
     Will return return nr of seconds to sleep
@@ -8,5 +10,4 @@ def default_retry_handler(e: Exception, base_seconds_delay: int = 0, **kwargs) -
         base_seconds_delay(int): nr of seconds to sleep for between retries. Defaults to 0
     """
 
-    print(f"retry handler locals: {locals()}")
     return base_seconds_delay
