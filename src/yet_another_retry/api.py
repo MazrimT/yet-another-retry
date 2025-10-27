@@ -35,7 +35,7 @@ def retry(
         # check if "retry_config" is in the signature so we know later to send the retry_config or not
         add_retry_config = True if "retry_config" in sig.parameters else False
 
-        def wrapper(*args, **kwargs):
+        def wrapper(*func_args, **func_kwargs):
             retry_config = {
                 "retry_exceptions": retry_exceptions,
                 "fail_on_exceptions": fail_on_exceptions,
@@ -46,13 +46,15 @@ def retry(
                 "raise_final_exception": raise_final_exception,
                 "attempt": 0,
                 "previous_delay": 0,
-                **kwargs,
+                **func_kwargs,
             }
 
+            if add_retry_config:
+                func_kwargs["retry_config"] = retry_config
             # makes a copy of the input parameters to the decorated function so we can pass it to the function
             # without accidentally sending any extra args/kwargs from the decorator
-            bound_args = sig.bind_partial(*args, **kwargs)
-            bound_args.apply_defaults()
+            # bound_args = sig.bind_partial(*args, **kwargs)
+            # bound_args.apply_defaults()
 
             # placeholder for previous delay on each loop
             previous_delay = 0
@@ -64,10 +66,9 @@ def retry(
                     kwargs["previous_delay"] = previous_delay
 
                     if add_retry_config:
-                        bound_args.arguments["retry_config"] = retry_config
-                        bound_args.arguments["retry_config"]["attempt"] = i
+                        func_kwargs["retry_config"]["attempt"] = i
 
-                    return func(*bound_args.args, **bound_args.kwargs)
+                    return func(*func_args, **func_kwargs)
 
                 except fail_on_exceptions as e:
 

@@ -7,5 +7,4 @@ def default_exception_handler(e: Exception, **kwargs):
         Exception: the exception supplied.
     """
 
-    print(f"exception handler locals: {locals()}")
     raise e

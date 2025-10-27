@@ -8,5 +8,4 @@ def default_retry_handler(e: Exception, base_seconds_delay: int = 0, **kwargs) -
         base_seconds_delay(int): nr of seconds to sleep for between retries. Defaults to 0
     """
 
-    print(f"retry handler locals: {locals()}")
     return base_seconds_delay
