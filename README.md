@@ -59,10 +59,11 @@ The decorator uses a concept of handlers for retries and exceptions.
 A handler is just a function with some requirements.  
 The handler will be called on retries and final exception.  
 Both types of handlers must have the following parameters:
-- e: Exception
-- **kwargs
+- e: Exception      - must be first parameter
+- *args             - must be second to last parameter
+- **kwargs          - must be last parameter
 
-Any extra kwargs added to the retry decorator will be passed on to both  the retry and exception handlers.
+Any extra kwargs added to the retry decorator will be passed on to both the retry and exception handlers.
 
 
 ## Retry handlers
