@@ -4,10 +4,9 @@ Exception handler must have the following parameters:
 e: Exception
 retry_config: dict
 -- any custom input
-*args
 **kwargs
 
-The decorator might be submitting things that your custom handler is not expecting so *args and **kwargs are required
+The decorator might be submitting things that your custom handler is not expecting so **kwargs are required
 """
 
 from yet_another_retry import retry

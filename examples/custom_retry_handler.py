@@ -3,8 +3,7 @@ Retry handler must have the following parameters:
 
 e: Exception
 -- any custom input
-*args
-**kwargs
+    **kwargs
 
 The decorator might be submitting things that your custom handler is not expecting so **kwargs is a required input parameter
 
@@ -19,12 +18,18 @@ def custom_retry_handler(
 ) -> int:
     """Custom handler that accepts the config and any other extra parameters required
 
-    Args:
-        e(Exception): the exception raised
-        sleep_modifier(int): a modifier for the sleep delay
+    :param e: The exception that occurred
+    :type e: Exception
 
-    Returns:
-        int: the time to sleep in seconds
+    :param attempt: The current attempt number
+    :type attempt: int
+
+    :param sleep_modifier: A modifier for the sleep delay
+    :type sleep_modifier: int
+
+    :returns: The time to sleep in seconds
+    :rtype: int
+
     """
 
     print(f"This is attempt nr {attempt}")

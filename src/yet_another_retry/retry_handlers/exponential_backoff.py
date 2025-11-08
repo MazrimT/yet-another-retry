@@ -8,30 +8,39 @@ def exponential_backoff(
     exponential_factor: float | int = 2,
     max_delay_seconds: float | int = None,
     jitter_range: float | int = None,
-    *args,
     **kwargs,
 ) -> int:
-    """Retry handler increases the sleep time exponentially.
+    """
+    Retry handler increases the sleep time exponentially.
 
-    How long to sleep is calculcated as::
+    How long to sleep is calculated as::
 
         (base_delay x exponential_factor^attempt) + jitter
 
-    Default parameters will result in a standard base-2 exponential increase::
+    Default parameters will result in a base-2 exponential increase:
 
         2, 4, 8, 16, 32, 64, 128....
 
-    Args:
-        e(Exception): The exception that occured. Defaults to Exception.
-        attempt(int): Attempt number, is passed from the decorator on each retry.
-        base_delay_seconds(float | int): Base of the sleep calculation. Defaults to 1.
-        exponential_factor(float | int): Multiplyer for the sleep calculation. Defaults to 2
-        max_delay_seconds(float | int, optional): The max seconds to sleep between tries. If None no upper limit. Defaults to None.
-        jitter_range(float | int, optional): If supplied, a random delay will be added between jitter_range and negative jitter_range (-jitter_range) with a step of 0.1 If None no jitter is added. Defaults to None
+    :param e: The exception that occurred. Defaults to Exception.
+    :type e: Exception
 
-    Returns:
-        float: Number of seconds to sleep
+    :param attempt: Attempt number, is passed from the decorator on each retry.
+    :type attempt: int
 
+    :param base_seconds_delay: Base of the sleep calculation. Defaults to 1.
+    :type base_seconds_delay: float or int
+
+    :param exponential_factor: Multiplier for the sleep calculation. Defaults to 2.
+    :type exponential_factor: float or int
+
+    :param max_delay_seconds: The max seconds to sleep between tries. If None, no upper limit. Defaults to None.
+    :type max_delay_seconds: float or int, optional
+
+    :param jitter_range: If supplied, a random delay will be added between jitter_range and negative jitter_range (-jitter_range) with a step of 0.1. If None, no jitter is added. Defaults to None.
+    :type jitter_range: float or int, optional
+
+    :returns: Number of seconds to sleep
+    :rtype: float
     """
 
     sleep_delay = base_seconds_delay * (exponential_factor**attempt)
