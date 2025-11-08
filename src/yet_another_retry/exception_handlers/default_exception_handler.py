@@ -1,10 +1,11 @@
-def default_exception_handler(e: Exception, *args, **kwargs):
+def default_exception_handler(e: Exception, **kwargs):
     """Base function for handling exception
-    Args:
-        e(Exception): the exception to raise
 
-    Raises:
-        Exception: the exception supplied.
+    :param e: the exception to raise
+    :type e: Exception
+
+    :raises: Exception
+
     """
 
     raise e
