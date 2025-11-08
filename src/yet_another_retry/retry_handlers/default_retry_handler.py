@@ -1,4 +1,9 @@
-def default_retry_handler(e: Exception, base_seconds_delay: int = 0, **kwargs) -> int:
+from datetime import timedelta
+
+
+def default_retry_handler(
+    e: Exception, retry_delay: int | float | timedelta = 0, **kwargs
+) -> int:
     """Package default retry handler
 
     Will return return nr of seconds to sleep
@@ -6,11 +11,11 @@ def default_retry_handler(e: Exception, base_seconds_delay: int = 0, **kwargs) -
     :param e: The exception that occurred. Defaults to Exception.
     :type e: Exception
 
-    :param base_seconds_delay: Nr of seconds to sleep for between retries. Defaults to 0
-    :type base_seconds_delay: int
+    :param retry_delay: Time to sleep between retries. If int or float, it is treated as seconds. If timedelta, total_seconds() is used. Defaults to 0
+    :type retry_delay: int | float | timedelta
 
     :return: Nr of seconds to sleep
     :rtype: int
     """
 
-    return base_seconds_delay
+    return retry_delay
