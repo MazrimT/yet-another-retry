@@ -21,8 +21,8 @@ from yet-another-retry import retry
 ### Basic usage
 This is not much different from other retry packages.  
 Uses the decorator with all default values  
-tries=3  
-base_delay_seconds=0  
+tries = 3  
+retry_delay = 0  
 
 ```python
 from yet_another_retry import retry

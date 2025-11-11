@@ -1,10 +1,11 @@
 import random
+from datetime import timedelta
 
 
 def exponential_backoff(
     e: Exception,
     attempt: int,
-    base_seconds_delay: float | int = 1,
+    retry_delay: float | int | timedelta = 1,
     exponential_factor: float | int = 2,
     max_delay_seconds: float | int = None,
     jitter_range: float | int = None,
@@ -27,8 +28,8 @@ def exponential_backoff(
     :param attempt: Attempt number, is passed from the decorator on each retry.
     :type attempt: int
 
-    :param base_seconds_delay: Base of the sleep calculation. Defaults to 1.
-    :type base_seconds_delay: float or int
+    :param retry_delay: Time to sleep between retries. If int or float, it is treated as seconds. If timedelta, total_seconds() is used. Defaults to 0
+    :type retry_delay: int | float | timedelta
 
     :param exponential_factor: Multiplier for the sleep calculation. Defaults to 2.
     :type exponential_factor: float or int
@@ -43,7 +44,10 @@ def exponential_backoff(
     :rtype: float
     """
 
-    sleep_delay = base_seconds_delay * (exponential_factor**attempt)
+    if isinstance(retry_delay, timedelta):
+        retry_delay = retry_delay.total_seconds()
+
+    sleep_delay = retry_delay * (exponential_factor**attempt)
 
     if max_delay_seconds and sleep_delay > max_delay_seconds:
         sleep_delay = max_delay_seconds

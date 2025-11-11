@@ -5,7 +5,7 @@ from yet_another_retry.retry_handlers import exponential_backoff
 @retry(
     retry_handler=exponential_backoff,
     tries=5,
-    base_seconds_delay=1,
+    retry_delay=1,
     exponential_factor=3,
     max_delay_seconds=1800,
     jitter_range=10,

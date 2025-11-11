@@ -3,13 +3,14 @@ import time
 import inspect
 from yet_another_retry.retry_handlers import default_retry_handler
 from yet_another_retry.exception_handlers import default_exception_handler
+from datetime import timedelta
 
 
 def retry(
     retry_exceptions: Exception | tuple[Exception, ...] = Exception,
     fail_on_exceptions: Exception | tuple[Exception] = (),
     tries: int = 3,
-    base_seconds_delay: float | int = 0,
+    retry_delay: float | int | timedelta = 0,
     retry_handler: Callable = default_retry_handler,
     exception_handler: Callable = default_exception_handler,
     raise_final_exception: bool = True,
@@ -22,7 +23,7 @@ def retry(
         retry_exceptions
         fail_on_exceptions
         tries
-        base_seconds_delay
+        retry_delay
         retry_handler
         exception_handler
         raise_final_exception
@@ -41,8 +42,8 @@ def retry(
     :param tries: Maximum number of retries to attempt. Defaults to 3
     :type tries: int
 
-    :param base_seconds_delay: number of seconds to delay, used by default retry handler and other built in handlers. Defaults to 0
-    :type base_seconds_delay: int | float
+    :param retry_delay: Time to sleep between retries. If int or float, it is treated as seconds. If timedelta, total_seconds() is used. If negative, it will be treated as 0. Defaults to 0
+    :type retry_delay: int | float | timedelta
 
     :param retry_handler: Callable function to run in case of retries. Defaults to default_retry_handler function
     :type retry_handler: Callable
@@ -72,7 +73,7 @@ def retry(
                 "retry_exceptions": retry_exceptions,
                 "fail_on_exceptions": fail_on_exceptions,
                 "tries": tries,
-                "base_seconds_delay": base_seconds_delay,
+                "retry_delay": retry_delay,
                 "retry_handler": retry_handler,
                 "exception_handler": exception_handler,
                 "raise_final_exception": raise_final_exception,
@@ -80,9 +81,6 @@ def retry(
                 "previous_delay": 0,
                 **kwargs,
             }
-
-            # placeholder for previous delay on each loop
-            previous_delay = 0
 
             for i in range(1, tries + 1):
 
@@ -107,15 +105,26 @@ def retry(
                         if raise_final_exception:
                             raise e
 
-                    delay_seconds = retry_handler(e, **retry_config)
-                    retry_config["previous_delay"] = delay_seconds
+                    delay_time = retry_handler(e, **retry_config)
 
-                    # the return from the retry handler must be an int or a float
-                    if not isinstance(delay_seconds, (int, float)):
+                    if not isinstance(delay_time, (int, float, timedelta)):
                         raise TypeError(
-                            f"The retry_handler did not return an int or float. Can not use {type(delay_seconds)} as input to sleep"
+                            f"The retry_handler did not return an int, float or timedelta. Can not use {type(delay_time)} as input to sleep."
                         )
-                    time.sleep(delay_seconds)
+
+                    retry_config["previous_delay"] = delay_time
+
+                    # we need to make sure time.sleep() gets a float/int so if we happen to have a timedelta we convert it now after saving it to config so that handlers can still use it
+                    if isinstance(delay_time, timedelta):
+                        sleep_seconds = delay_time.total_seconds()
+                    else:
+                        sleep_seconds = delay_time
+
+                    # can not sleep negative time
+                    if sleep_seconds < 0:
+                        sleep_seconds = 0
+
+                    time.sleep(sleep_seconds)
 
         return wrapper
 
