@@ -87,9 +87,9 @@ def my_function():
 ```
 
 ## Exception handlers
-A exception handler triggers on raising exception on the last retry.
-Works the same way as retry_handler except it is not expected to return anything.
-The default raise_exception handler just raises the exception.
+An exception handler is called if the last try raises and exception.
+It the same way as retry_handler except it is not expected to return anything.
+The default exception handler just raises the exception.
 By default if a custom decorator has not raised the exception the retry decorator will raise it after the exception_handler is done.
 To stop the decorator from raising the exception, if using a custom exception_handler, you can pass `raise_final_exception=False` to the decorator.
 
