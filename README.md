@@ -48,7 +48,7 @@ The default retry handler has a parameter "retry_delay_seconds" that can be modi
 ```python
 from yet_another_retry import retry
 
-@retry(base_delay_seconds=10)
+@retry(retry_delay=10)
 def my_function():
   ...
 
@@ -62,12 +62,12 @@ Both types of handlers must have the following parameters:
 - e: Exception      - must be first accepted parameter
 - **kwargs          - must be last accepted parameter
 
-Any kwargs added to the retry decorator will be passed on to both the retry and exception handlers.
+Keep in mind that any parameters added to the retry decorator will be passed on to both the retry and exception handlers.
 
 
 ## Retry handlers
 A retry handler is expected to return a float or integer that the retry function will sleep for before the next attempt.  
-The default retry_handler has a parameter `base_delay_seconds` that can be sent as a parameter to the decorator to modify the number of seconds it sleeps for.
+The default retry handler has a parameter `retry_delay` that can be sent as a parameter to the decorator to modify the number of seconds it sleeps for.
 
 See examples in the examples folder
 
@@ -87,11 +87,13 @@ def my_function():
 ```
 
 ## Exception handlers
-A exception handler triggers on raising exception on the last retry.
-Works the same way as retry_handler except it is not expected to return anything.
-The default raise_exception handler just raises the exception.
+An exception handler is called if the last try raises and exception.
+It the same way as retry_handler except it is not expected to return anything.
+The default exception handler just raises the exception.
 By default if a custom decorator has not raised the exception the retry decorator will raise it after the exception_handler is done.
 To stop the decorator from raising the exception, if using a custom exception_handler, you can pass `raise_final_exception=False` to the decorator.
+
+Keep in mind that any parameters added to the retry decorator will be passed on to both the retry and exception handlers.
 
 See examples in the examples folder
 
