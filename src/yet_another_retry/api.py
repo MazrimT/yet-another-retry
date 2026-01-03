@@ -1,12 +1,10 @@
 from typing import Callable
 import time
 import inspect
+from datetime import timedelta
 from yet_another_retry.retry_handlers import default_retry_handler
 from yet_another_retry.exception_handlers import default_exception_handler
-from datetime import timedelta
-from yet_another_retry.utils.retry_config import RetryConfig
-from yet_another_retry.utils.get_func_meta import get_func_meta
-from yet_another_retry.utils.filter_retry_config import filter_retry_config
+from yet_another_retry.utils import RetryConfig, get_func_meta, call_handler
 
 
 def retry(
@@ -56,10 +54,6 @@ def retry(
         # to be able to send the correct parameters to the decorated function and handlers we need to inspect their signatures
         (decorated_func_params, _) = get_func_meta(func)
         add_retry_config = "retry_config" in decorated_func_params
-        retry_handler_params, retry_handler_has_kwargs = get_func_meta(retry_handler)
-        exception_handler_params, exception_handler_has_kwargs = get_func_meta(
-            exception_handler
-        )
 
         def wrapper(*func_args, **func_kwargs) -> Callable:
 
@@ -73,8 +67,7 @@ def retry(
                 raise_final_exception=raise_final_exception,
             )
 
-            for k, v in kwargs.items():
-                setattr(retry_config, k, v)
+            vars(retry_config).update(kwargs)
 
             for i in range(1, tries + 1):
 
@@ -87,44 +80,29 @@ def retry(
 
                 # first check if we hit a fail_on_exceptions and should fail immediately
                 except fail_on_exceptions as e:
-                    if exception_handler_has_kwargs:
-                        exception_handler(e, **retry_config.__dict__)
-                    else:
-                        filtered_exception_params = filter_retry_config(
-                            retry_config=retry_config,
-                            expected_keys=exception_handler_params,
-                        )
-                        exception_handler(e, **filtered_exception_params)
+
+                    call_handler(
+                        e=e, handler=exception_handler, retry_config=retry_config
+                    )
 
                     if raise_final_exception:
-                        # in case the exception handler does raise it already
-                        # it will be raised here unless explicitly told not to
                         raise e
 
                 # then check if we hit a retryable exception
                 except retry_exceptions as e:
                     # if hit max tries handle exception
                     if i == tries:
-                        if exception_handler_has_kwargs:
-                            exception_handler(e, **retry_config.__dict__)
-                        else:
-                            filtered_exception_params = filter_retry_config(
-                                retry_config=retry_config,
-                                expected_keys=exception_handler_params,
-                            )
-                            exception_handler(e, **filtered_exception_params)
+                        call_handler(
+                            e=e, handler=exception_handler, retry_config=retry_config
+                        )
+
                         if raise_final_exception:
                             raise e
 
                     # if we are within the max tries we retry
-                    if retry_handler_has_kwargs:
-                        delay_time = retry_handler(e, **retry_config.__dict__)
-                    else:
-                        filtered_retry_params = filter_retry_config(
-                            retry_config=retry_config,
-                            expected_keys=retry_handler_params,
-                        )
-                        delay_time = retry_handler(e, **filtered_retry_params)
+                    delay_time = call_handler(
+                        e=e, handler=retry_handler, retry_config=retry_config
+                    )
 
                     if not isinstance(delay_time, (int, float, timedelta)):
                         raise TypeError(
