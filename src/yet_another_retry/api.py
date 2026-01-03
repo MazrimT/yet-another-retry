@@ -1,6 +1,5 @@
 from typing import Callable
 import time
-import inspect
 from datetime import timedelta
 from yet_another_retry.retry_handlers import default_retry_handler
 from yet_another_retry.exception_handlers import default_exception_handler
@@ -51,9 +50,9 @@ def retry(
 
     def decorator(func: Callable) -> Callable:
 
-        # to be able to send the correct parameters to the decorated function and handlers we need to inspect their signatures
-        (decorated_func_params, _) = get_func_meta(func)
-        add_retry_config = "retry_config" in decorated_func_params
+        # check if the function accepts a retry_config parameter
+        (func_params, _) = get_func_meta(func)
+        add_retry_config = "retry_config" in func_params
 
         def wrapper(*func_args, **func_kwargs) -> Callable:
 
@@ -90,7 +89,6 @@ def retry(
 
                 # then check if we hit a retryable exception
                 except retry_exceptions as e:
-                    # if hit max tries handle exception
                     if i == tries:
                         call_handler(
                             e=e, handler=exception_handler, retry_config=retry_config
@@ -122,6 +120,10 @@ def retry(
                         sleep_seconds = 0
 
                     time.sleep(sleep_seconds)
+
+                # if we hit an exception that is not in either retry_exceptions or fail_on_exceptions we break the loop to exit the decorator
+                except Exception as e:
+                    break
 
         return wrapper
 
