@@ -54,6 +54,9 @@ retry_exceptions: Exception | tuple[Exception]
 # Specific exceptions to instantly raise if they occure. Will stop the retrying. Defaults to None, meaning no exceptions will be instantly raised.
 fail_on_exceptions: Exception | tuple[Exception]
 ```
+> [!IMPORTANT]  
+> If an exception occurs that is not part of retry_exceptions or fail_on_exceptions the decorator will exit without raising the exception. The standard python `Exception` always acts as a catchall for any other exception.
+
 
 **Example**
 ```python
