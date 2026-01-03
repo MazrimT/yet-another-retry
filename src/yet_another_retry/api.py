@@ -1,9 +1,9 @@
 from typing import Callable
 import time
-import inspect
+from datetime import timedelta
 from yet_another_retry.retry_handlers import default_retry_handler
 from yet_another_retry.exception_handlers import default_exception_handler
-from datetime import timedelta
+from yet_another_retry.utils import RetryConfig, get_func_meta, call_handler
 
 
 def retry(
@@ -18,20 +18,7 @@ def retry(
 ) -> Callable:
     """Decorator for retrying a function
 
-    The following values will be passed to the retry and exception handlers as keyword arguments:
-
-        retry_exceptions
-        fail_on_exceptions
-        tries
-        retry_delay
-        retry_handler
-        exception_handler
-        raise_final_exception
-        attempt
-        previous_delay
-        + any additional kwargs provided to the decorator
-
-    All the above values will also be available in a dictionary called retry_config which will be passed to the decorated function if it accepts it as a parameter.
+    All the above values will also be available in a dataclass called retry_config which will be passed to the decorated function if it accepts it as a parameter named "retry_config" with type hint "RetryConfig".
 
     :param  retry_exceptions: An Exception or tuple of exceptions to retry. If supplied all other exceptions will be treated as instant failures. Python base Exception acts as a catch-all. Defaults to Exception.
     :type retry_exceptions: Exception | (Exception, ...)
@@ -54,7 +41,7 @@ def retry(
     :param raise_final_exception: If set to false the decorator itself will not raise the error but expect the handler to do it. Default is True
     :type raise_final_exception: bool
 
-    :param **kwargs: Any additional kwargs gets added as input to handlers and will also be added to the retry_config and sent as parameters to retry and exception handlers.
+    :param **kwargs: Any additional kwargs gets added as input to handlers and will also be sent as parameters to retry and exception handlers.
     :type **kwargs: Any
 
     :return: The decorated function
@@ -62,57 +49,65 @@ def retry(
     """
 
     def decorator(func: Callable) -> Callable:
-        # get the signature of the decorated function
-        sig = inspect.signature(func)
-        # check if "retry_config" is in the signature so we know later to send the retry_config or not
-        add_retry_config = True if "retry_config" in sig.parameters else False
+
+        # check if the function accepts a retry_config parameter
+        (func_params, _) = get_func_meta(func)
+        add_retry_config = "retry_config" in func_params
 
         def wrapper(*func_args, **func_kwargs) -> Callable:
 
-            retry_config = {
-                "retry_exceptions": retry_exceptions,
-                "fail_on_exceptions": fail_on_exceptions,
-                "tries": tries,
-                "retry_delay": retry_delay,
-                "retry_handler": retry_handler,
-                "exception_handler": exception_handler,
-                "raise_final_exception": raise_final_exception,
-                "attempt": 0,
-                "previous_delay": 0,
-                **kwargs,
-            }
+            retry_config = RetryConfig(
+                retry_exceptions=retry_exceptions,
+                fail_on_exceptions=fail_on_exceptions,
+                tries=tries,
+                retry_delay=retry_delay,
+                retry_handler=retry_handler,
+                exception_handler=exception_handler,
+                raise_final_exception=raise_final_exception,
+            )
+
+            vars(retry_config).update(kwargs)
 
             for i in range(1, tries + 1):
 
-                retry_config["attempt"] = i
+                retry_config.attempt = i
 
                 try:
                     if add_retry_config:
                         func_kwargs["retry_config"] = retry_config
                     return func(*func_args, **func_kwargs)
 
+                # first check if we hit a fail_on_exceptions and should fail immediately
                 except fail_on_exceptions as e:
 
-                    if exception_handler:
-                        exception_handler(e, **retry_config)
+                    call_handler(
+                        e=e, handler=exception_handler, retry_config=retry_config
+                    )
+
                     if raise_final_exception:
                         raise e
 
+                # then check if we hit a retryable exception
                 except retry_exceptions as e:
                     if i == tries:
-                        if exception_handler:
-                            exception_handler(e, **retry_config)
+                        call_handler(
+                            e=e, handler=exception_handler, retry_config=retry_config
+                        )
+
                         if raise_final_exception:
                             raise e
 
-                    delay_time = retry_handler(e, **retry_config)
+                    # if we are within the max tries we retry
+                    delay_time = call_handler(
+                        e=e, handler=retry_handler, retry_config=retry_config
+                    )
 
                     if not isinstance(delay_time, (int, float, timedelta)):
                         raise TypeError(
                             f"The retry_handler did not return an int, float or timedelta. Can not use {type(delay_time)} as input to sleep."
                         )
 
-                    retry_config["previous_delay"] = delay_time
+                    retry_config.previous_delay = delay_time
 
                     # we need to make sure time.sleep() gets a float/int so if we happen to have a timedelta we convert it now after saving it to config so that handlers can still use it
                     if isinstance(delay_time, timedelta):
@@ -125,6 +120,10 @@ def retry(
                         sleep_seconds = 0
 
                     time.sleep(sleep_seconds)
+
+                # if we hit an exception that is not in either retry_exceptions or fail_on_exceptions we break the loop to exit the decorator
+                except Exception as e:
+                    break
 
         return wrapper
 

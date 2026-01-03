@@ -36,7 +36,7 @@ def custom_retry_handler(
     print(f"The error was a {e.__class__.__name__} Exception")
     delay = attempt * sleep_modifier
     print(f"Will sleep for {delay} seconds")
-
+    print(f"Additional kwargs: {kwargs}")
     return delay
 
 
