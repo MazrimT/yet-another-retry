@@ -1,4 +1,4 @@
-from yet_another_retry import retry
+from yet_another_retry import retry, RetryConfig
 from yet_another_retry.retry_handlers import exponential_backoff
 
 
@@ -10,9 +10,9 @@ from yet_another_retry.retry_handlers import exponential_backoff
     max_delay_seconds=1800,
     jitter_range=10,
 )
-def my_function(retry_config: dict):
-    print(f"This is attempt number: {retry_config['attempt']}")
-    print(f"Last sleep was {retry_config['previous_delay']}")
+def my_function(retry_config: RetryConfig):
+    print(f"This is attempt number: {retry_config.attempt}")
+    print(f"Last sleep was {retry_config.previous_delay}")
     raise Exception("This is an exception")
 
 

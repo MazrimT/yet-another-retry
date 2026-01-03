@@ -2,7 +2,7 @@ from datetime import timedelta
 
 
 def default_retry_handler(
-    e: Exception, retry_delay: int | float | timedelta = 0, **kwargs
+    e: Exception, retry_delay: int | float | timedelta = 0
 ) -> int:
     """Package default retry handler
 

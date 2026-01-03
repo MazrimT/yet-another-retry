@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling", "hatch-semver"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.9.11,<0.10.0"]
+build-backend = "uv_build"
 
 [project]
 name = "yet-another-retry"
@@ -16,7 +16,6 @@ classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Topic :: Software Development",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",

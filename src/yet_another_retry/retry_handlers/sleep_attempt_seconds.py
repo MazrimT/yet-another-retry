@@ -2,7 +2,7 @@ from datetime import timedelta
 
 
 def sleep_attempt_seconds(
-    e: Exception, attempt: int, retry_delay: int | float | timedelta = 0, **kwargs
+    e: Exception, attempt: int, retry_delay: int | float | timedelta = 0
 ) -> int:
     """Retry handler that returns the attempt number as delay
 

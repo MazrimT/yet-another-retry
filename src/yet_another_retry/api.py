@@ -4,6 +4,9 @@ import inspect
 from yet_another_retry.retry_handlers import default_retry_handler
 from yet_another_retry.exception_handlers import default_exception_handler
 from datetime import timedelta
+from yet_another_retry.utils.retry_config import RetryConfig
+from yet_another_retry.utils.get_func_meta import get_func_meta
+from yet_another_retry.utils.filter_retry_config import filter_retry_config
 
 
 def retry(
@@ -18,20 +21,7 @@ def retry(
 ) -> Callable:
     """Decorator for retrying a function
 
-    The following values will be passed to the retry and exception handlers as keyword arguments:
-
-        retry_exceptions
-        fail_on_exceptions
-        tries
-        retry_delay
-        retry_handler
-        exception_handler
-        raise_final_exception
-        attempt
-        previous_delay
-        + any additional kwargs provided to the decorator
-
-    All the above values will also be available in a dictionary called retry_config which will be passed to the decorated function if it accepts it as a parameter.
+    All the above values will also be available in a dataclass called retry_config which will be passed to the decorated function if it accepts it as a parameter named "retry_config" with type hint "RetryConfig".
 
     :param  retry_exceptions: An Exception or tuple of exceptions to retry. If supplied all other exceptions will be treated as instant failures. Python base Exception acts as a catch-all. Defaults to Exception.
     :type retry_exceptions: Exception | (Exception, ...)
@@ -54,7 +44,7 @@ def retry(
     :param raise_final_exception: If set to false the decorator itself will not raise the error but expect the handler to do it. Default is True
     :type raise_final_exception: bool
 
-    :param **kwargs: Any additional kwargs gets added as input to handlers and will also be added to the retry_config and sent as parameters to retry and exception handlers.
+    :param **kwargs: Any additional kwargs gets added as input to handlers and will also be sent as parameters to retry and exception handlers.
     :type **kwargs: Any
 
     :return: The decorated function
@@ -62,57 +52,86 @@ def retry(
     """
 
     def decorator(func: Callable) -> Callable:
-        # get the signature of the decorated function
-        sig = inspect.signature(func)
-        # check if "retry_config" is in the signature so we know later to send the retry_config or not
-        add_retry_config = True if "retry_config" in sig.parameters else False
+
+        # to be able to send the correct parameters to the decorated function and handlers we need to inspect their signatures
+        (decorated_func_params, _) = get_func_meta(func)
+        add_retry_config = "retry_config" in decorated_func_params
+        retry_handler_params, retry_handler_has_kwargs = get_func_meta(retry_handler)
+        exception_handler_params, exception_handler_has_kwargs = get_func_meta(
+            exception_handler
+        )
 
         def wrapper(*func_args, **func_kwargs) -> Callable:
 
-            retry_config = {
-                "retry_exceptions": retry_exceptions,
-                "fail_on_exceptions": fail_on_exceptions,
-                "tries": tries,
-                "retry_delay": retry_delay,
-                "retry_handler": retry_handler,
-                "exception_handler": exception_handler,
-                "raise_final_exception": raise_final_exception,
-                "attempt": 0,
-                "previous_delay": 0,
-                **kwargs,
-            }
+            retry_config = RetryConfig(
+                retry_exceptions=retry_exceptions,
+                fail_on_exceptions=fail_on_exceptions,
+                tries=tries,
+                retry_delay=retry_delay,
+                retry_handler=retry_handler,
+                exception_handler=exception_handler,
+                raise_final_exception=raise_final_exception,
+            )
+
+            for k, v in kwargs.items():
+                setattr(retry_config, k, v)
 
             for i in range(1, tries + 1):
 
-                retry_config["attempt"] = i
+                retry_config.attempt = i
 
                 try:
                     if add_retry_config:
                         func_kwargs["retry_config"] = retry_config
                     return func(*func_args, **func_kwargs)
 
+                # first check if we hit a fail_on_exceptions and should fail immediately
                 except fail_on_exceptions as e:
+                    if exception_handler_has_kwargs:
+                        exception_handler(e, **retry_config.__dict__)
+                    else:
+                        filtered_exception_params = filter_retry_config(
+                            retry_config=retry_config,
+                            expected_keys=exception_handler_params,
+                        )
+                        exception_handler(e, **filtered_exception_params)
 
-                    if exception_handler:
-                        exception_handler(e, **retry_config)
                     if raise_final_exception:
+                        # in case the exception handler does raise it already
+                        # it will be raised here unless explicitly told not to
                         raise e
 
+                # then check if we hit a retryable exception
                 except retry_exceptions as e:
+                    # if hit max tries handle exception
                     if i == tries:
-                        if exception_handler:
-                            exception_handler(e, **retry_config)
+                        if exception_handler_has_kwargs:
+                            exception_handler(e, **retry_config.__dict__)
+                        else:
+                            filtered_exception_params = filter_retry_config(
+                                retry_config=retry_config,
+                                expected_keys=exception_handler_params,
+                            )
+                            exception_handler(e, **filtered_exception_params)
                         if raise_final_exception:
                             raise e
 
-                    delay_time = retry_handler(e, **retry_config)
+                    # if we are within the max tries we retry
+                    if retry_handler_has_kwargs:
+                        delay_time = retry_handler(e, **retry_config.__dict__)
+                    else:
+                        filtered_retry_params = filter_retry_config(
+                            retry_config=retry_config,
+                            expected_keys=retry_handler_params,
+                        )
+                        delay_time = retry_handler(e, **filtered_retry_params)
 
                     if not isinstance(delay_time, (int, float, timedelta)):
                         raise TypeError(
                             f"The retry_handler did not return an int, float or timedelta. Can not use {type(delay_time)} as input to sleep."
                         )
 
-                    retry_config["previous_delay"] = delay_time
+                    retry_config.previous_delay = delay_time
 
                     # we need to make sure time.sleep() gets a float/int so if we happen to have a timedelta we convert it now after saving it to config so that handlers can still use it
                     if isinstance(delay_time, timedelta):
