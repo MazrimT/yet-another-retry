@@ -6,8 +6,8 @@ from yet_another_retry.retry_handlers import exponential_backoff
     retry_handler=exponential_backoff,
     tries=5,
     retry_delay=1,
-    exponential_factor=3,
-    max_delay_seconds=1800,
+    exponential_factor=2,
+    max_delay_seconds=60,
     jitter_range=10,
 )
 def my_function(retry_config: RetryConfig):
