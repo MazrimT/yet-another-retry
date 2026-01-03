@@ -19,9 +19,11 @@ then import with:
 from yet_another_retry import retry
 ```
 
+
 ## Usage
 
 The package can be used in several different ways, please see the examples folder for some more direct examples, this README will try to explain each feature, but not go into too many examples.
+
 
 ### Basic usage
 
@@ -32,6 +34,7 @@ To use default settings of `3 tries` (which includes the first attempt) and `0 s
 def my_function():
   ...
 ```
+
 
 ### Input params
 
@@ -65,47 +68,43 @@ def my_function():
   ...
 ```
 
-## Other supplied handlers
 
-To use another handler you can create your own or use one of the other supplied handlers.
+## Built in handlers
+
+The package comes with a few basic handlers.  
+Handlers are just functions that will be called on retry or final exception.  
+See below how to create a custom handler.
 
 ```python
 from yet_another_retry import retry
-from yet_another_retry.retry_handlers import exponential_backoff, sleep_attempt_seconds
+from yet_another_retry.retry_handlers import sleep_attempt_seconds, exponential_backoff
 from yet_another_retry.exception_handlers import do_not_raise
 
-# retry handler that by default does a simple exponential backoff
-@retry(retry_handler=exponential_backoff)
-def my_function():
-    ...
-
-# retry handler that will just sleep increasing number of seconds for each attemtp
+# Retry handler that will just sleep increasing number of seconds for each attemtp
 # attempt 1 = 1 second
 # attempt 2 = 2 seconds and so on
 @retry(retry_handler=sleep_attempt_seconds)
-Retry handler must return a int, float or timedelta that the decorator will sleep for.
+def my_function():
+    ...
 
-def my_other_function():
+# Retry handler that by default does a simple exponential backoff
+# has a few extra input parameters, see handler docstring for more details
+@retry(retry_handler=exponential_backoff, exponential_factor=2, max_delay_seconds=60, jitter_range=3)
+def my_function():
     ...
 
 # Exception handler that fails silently. Mostly exists as an example, probably bad idea in most cases.
 # if you also in as in this case set raise_final_exception to False the final error will pass completely silently.
 @retry(exception_handler=do_not_raise, raise_final_exception=False)
-def my_other_other_function():
+def my_function():
     ...
-
 ```
-
-You can also create a custom handler from scratch.
-Handlers are just functions that gets called if a retry or final exception happens.
-Information about the retry/exception gets passed to the handler.
 
 
 ## Custom handlers
 
-Handlers are just functions that will be called on retry or final exception.
-Hander must have `e: Exception` as first input param.
-It can also ask for any of the decorator input params, including custom inputs.
+Hander must have `e: Exception` as first input param.  
+It can also ask for any of the decorator input params, including custom inputs.  
 The handler can also ask for any of the decorator input parameters  
 `tries`, `retry_delay`, `raise_final_exception`, `retry_exceptions`, `fail_on_exceptions`  
 as well as two extra parameters that are based on the current attempt:
@@ -150,7 +149,6 @@ The decorator will use this as the time to sleep.
 
 Exception handler doesn't need to return anything, if anything is returned it will be ignored.
 Keep in mind that it's the decorator itself that preforms the sleep, the retry handler is there to decide the time to sleep and return that value.
-
 
 
 ## Accessing retry config in the decorated function.
